@@ -1,63 +1,69 @@
+#include "calculator.h"
 #include "stackFuncs.h"
 #include "safetyOfStack.h"
+
 
 #include <assert.h>
 #include <stdio.h>
 
 
 
-#define CHECK_STACK code_error = stackVerify(stack, __FILE__, __func__, __LINE__); \
-                    if (code_error > 0) \
-                    {  \
-                        return code_error; \
-                    }
+void crashProgramm (my_stack_t* stack);
 
 int main()
 {
-    stack_elem_t number = 5;
-    stack_elem_t value = 0;
+    //stack_elem_t number = 5;
+    //stack_elem_t value = 0;
     my_stack_t stack1 = {};
     stackInit(&stack1);
+    calculatorOn(&stack1);
+    //crashProgramm(&stack1);
+    // stack1.data = nullptr;
+    // stack1.size = -5;
+    // stack1.capasity = -10;
 
-    switch (ERR_INVALID_PTR_TO_ELEM)
+    //stackPush(&stack1, number++);
+    // stackPush(&stack1, number++);
+    // stackPush(&stack1, number++);
+    // stackPush(&stack1, number++);
+    // stackPush(&stack1, number++);
+    stackDestroy(&stack1);
+    return 0;
+}
+
+void crashProgramm (my_stack_t* stack)
+{
+    switch (ERR_INVALID_DATA)
     {
         case HAVE_NO_ERRORS:
             break;
         case ERR_INVALID_DATA:
-            stack1.data = nullptr;
+            stack->data = nullptr;
             break;
         case ERR_INVALID_SIZE:
-            stack1.size = -5;
+            stack->size = -5;
             break;
         case ERR_INVALID_CAPASITY:
-            stack1.capasity = -10;
+            stack->capasity = -10;
             break;
         case ERR_SIZE_MORE_CAPASITY:
-            stack1.size = -5;
-            stack1.capasity = -10;
+            stack->size = -5;
+            stack->capasity = -10;
             break;
         case ERR_INVALID_PTR_TO_ELEM:
-            stack1.data[1] = BAD_VALUE;
+            stack->data[1] = BAD_VALUE;
+            break;
+        case ERR_LEFT_ATTACK:
+            ;
+            break;
+        case ERR_RIGHT_ATTACK:
+            ;
             break;
         default:
             assert(0 && "invalid code of error!!!\n");
-
     }
 
-    // stackPush(&stack1, number++);
-    // stackPush(&stack1, number++);
-    // stackPush(&stack1, number++);
-    // stackPush(&stack1, number++);
-    // stackPush(&stack1, number++);
-    printStack(&stack1);
-    for (stack_size_t index = 0; index < stack1.size; index++)
-    {
-        stackPop(&stack1, &value);
-        printf("value%lld = %d\n", index, value);
-    }
-    printStack(&stack1);
-    stackDestroy(&stack1);
-    return 0;
+    return;
 }
 
 
