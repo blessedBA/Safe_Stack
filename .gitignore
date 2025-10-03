@@ -2,3 +2,7 @@ Safe_Stack.out.dSYM
 log_stack.txt
 Safe_Stack.out
 build_Stack.sh
+.vscode
+Assembler.asm
+Byte_code.asm
+

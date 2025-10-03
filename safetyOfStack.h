@@ -5,15 +5,9 @@
                     { \
                         return code_error; \
                     }
+#include "generalObjectForStack.h"
+#define N_DEBUG 1L
 
-typedef struct
-{
-    const char* file_name;
-    const char* func_name;
-    const int line;
-} func_data;
-
-typedef int int_error_t;
 typedef enum
 {
     HAVE_NO_ERRORS = 0,
@@ -38,11 +32,25 @@ typedef enum
     code_ERR_SIZE_MORE_CAPASITY  = 8,
     code_ERR_INVALID_PTR_TO_ELEM = 16,
     code_ERR_LEFT_ATTACK         = 32,
-    code_ERR_RIGHT_ATTACK        = 64
+    code_ERR_RIGHT_ATTACK        = 64,
 
+    code_ERR_DIV_BY_0            = 128
 
 } my_error_code_t;
 
-//typedef struct ...
+typedef struct
+{
+    const my_error_t error;
+    const my_error_code_t code_error;
+    const char* description;
+    bool isError;
+} storageErrors;
+
+void stackDump (my_stack_t* stack, int GLOBAL_ERROR, func_data* f_data);
+int_error_t stackVerify  (my_stack_t* stack, const char* file_n,
+                                                 const char* func_n, int line_str);
+bool setCanaries (my_stack_t* stack);
+void printSizeAndCapacity (my_stack_t* stack, FILE* output_file);
+
 
 #endif // SAFETY_OF_STACK_H

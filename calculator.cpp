@@ -1,4 +1,5 @@
 #include "calculator.h"
+#include "Files.h"
 #include "operationsCalc.h"
 #include "safetyOfStack.h"
 #include "stackFuncs.h"
@@ -7,13 +8,16 @@
 #include <stdio.h>
 #include <string.h>
 
+
 int_error_t calculatorOn (my_stack_t* stack)
 {
+    #if N_DEBUG
     int_error_t  code_error = CHECK_STACK;
+    #endif
 
     commandStorage command = {}; // стандартные значения указаны в определении
 
-    FILE* input_file = stdin;
+    FILE* input_file = fopen(ASSEMBLER, "r");
     FILE* output_file = stdout;
     char name_command[5] = "";
     code_t code_command = code_NAN;
@@ -64,9 +68,10 @@ int_error_t calculatorOn (my_stack_t* stack)
     }
     fprintf(output_file, "GOOD LUCK MEOW\n");
     fclose(input_file);
-    fclose(output_file);
-
-    CHECK_STACK
+    //fclose(output_file);
+    #if N_DEBUG
+    code_error = CHECK_STACK
+    #endif
 
     return HAVE_NO_ERRORS;
 }
@@ -74,7 +79,9 @@ int_error_t calculatorOn (my_stack_t* stack)
 bool getCommand (commandStorage* command, code_t* code_command, stack_elem_t* number,
                                                  char* name_command, FILE* input_file)
 {
+    #if N_DEBUG
     assert(command != nullptr && code_command != nullptr && number != nullptr && input_file != nullptr);
+    #endif
     *code_command = code_NAN;
     if (fscanf(input_file, "%4s", name_command) != 1)
     {
