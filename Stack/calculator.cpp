@@ -128,6 +128,14 @@ bool getCommand (commandStorage* command, code_t* code_command, stack_elem_t* nu
     {
         *code_command = code_HLT;
     }
+    else if (strcmp(command->PUSHR, name_command) == 0)
+    {
+        *code_command = code_PUSHR;
+    }
+    else if (strcmp(command->POPR, name_command) == 0)
+    {
+        *code_command = code_POPR;
+    }
     else
     {
         return false;

@@ -14,7 +14,7 @@ void writeBuffer (char* buffer, FILE* file_input, ssize_t* size_file)
     assert(file_input != nullptr && "invalid pointer to file_input!!!\n");
     assert(size_file != nullptr && "invalid pointer to size_file!!!\n");
 
-    *size_file = fread(buffer, sizeof(char), *size_file, file_input) + 1;
+    *size_file = (ssize_t)(fread(buffer, sizeof(char), (size_t)*size_file, file_input) + 1);
     if (*size_file == 0)
     {
         assert(0 && "failed to read file!!!\n");
@@ -23,6 +23,7 @@ void writeBuffer (char* buffer, FILE* file_input, ssize_t* size_file)
 }
 char* creatBuffer(ssize_t* size_file, const char* filepath)
 {
+
     assert(size_file != nullptr && "invalid pointer to size_file!!!\n");
     assert(filepath != nullptr && "invalid pointer to filepath!!!\n");
 
@@ -34,7 +35,7 @@ char* creatBuffer(ssize_t* size_file, const char* filepath)
         perror("failed to get info about file!!!\n");
         return nullptr;
     }
-    char*  buffer = (char*)calloc(*size_file + 2, sizeof(char));
+    char*  buffer = (char*)calloc((size_t)(*size_file + 2), sizeof(char));
     return buffer;
 }
 

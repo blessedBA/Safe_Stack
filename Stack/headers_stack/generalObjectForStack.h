@@ -9,8 +9,8 @@ typedef long long stack_size_t;
 
 typedef struct
 {
-    char* file_name;
-    char* func_name;
+    const char* file_name;
+    const char* func_name;
     int line;
 } func_data;
 

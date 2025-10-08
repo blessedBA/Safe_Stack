@@ -1,4 +1,5 @@
 #include "calculator.h"
+#include "Files.h"
 #include "stackFuncs.h"
 #include "safetyOfStack.h"
 #include "generalObjectForStack.h"
@@ -16,8 +17,12 @@ int main()
 {
     my_stack_t stack1 = {};
     stackInit(&stack1);
+    FILE* byte_file = fopen(BYTE_CODE, "rb");
+    size_t count_elems = 0;
+    fread(&count_elems, 1, sizeof(int), byte_file);
+    printf("count_elems = %d\n", count_elems);
 
-    calculatorOn(&stack1);
+    //calculatorOn(&stack1);
     //crashProgramm(&stack1);
     //stack1.data[0] = 52;
     //printf("%d\n", stack1.data[0]);

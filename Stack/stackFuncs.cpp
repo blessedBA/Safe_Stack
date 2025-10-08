@@ -48,8 +48,8 @@ int_error_t stackInit (my_stack_t* stack)
     int_error_t  code_error = HAVE_NO_ERRORS;
     #endif
 
-    stack->capacity = 10;
-    stack->size = 0;
+    stack->capacity = 20;
+    stack->size = 1;
     stack->data = (stack_elem_t*)calloc((size_t)(stack->capacity + 2), sizeof(stack_elem_t));
     #if N_DEBUG
     assert(stack->data != nullptr);
@@ -68,6 +68,7 @@ int_error_t stackInit (my_stack_t* stack)
 
 int_error_t stackPop (my_stack_t* stack, stack_elem_t* value)
 {
+    printf("SIZE = %lld\n", stack->size);
     #if N_DEBUG
     int_error_t  code_error = CHECK_STACK;
     #endif

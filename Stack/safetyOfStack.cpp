@@ -98,8 +98,9 @@ bool setCanaries (my_stack_t* stack)
 
 void stackDump (my_stack_t* stack, int GLOBAL_ERROR, func_data* f_data)
 {
-    printf("stackDump was called!\n");
-    FILE* output_file = fopen(LOG_FILE, "a");
+    //printf("stackDump was called!\n");
+    //fopen(LOG_FILE_FOR_PROC, "a")
+    FILE* output_file = stdout;
     assert(output_file != nullptr && "failed to open file!!!\n");
 
     fprintf(output_file, "stackDump called from %s: function %s: %d\n", f_data->file_name,

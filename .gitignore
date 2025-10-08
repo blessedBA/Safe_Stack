@@ -5,4 +5,7 @@ build_Stack.sh
 .vscode
 Assembler.asm
 Byte_code.asm
-
+Processor.out.dSYM
+Assembler.out
+Assembler.out.dSYM
+Processor.out

@@ -48,7 +48,7 @@ typedef struct
 
 void stackDump (my_stack_t* stack, int GLOBAL_ERROR, func_data* f_data);
 int_error_t stackVerify  (my_stack_t* stack, const char* file_n,
-                                                 const char* func_n, int line_str);
+                                             const char* func_n, int line_str);
 bool setCanaries (my_stack_t* stack);
 void printSizeAndCapacity (my_stack_t* stack, FILE* output_file);
 
