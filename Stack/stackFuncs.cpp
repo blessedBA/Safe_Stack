@@ -68,7 +68,7 @@ int_error_t stackInit (my_stack_t* stack)
 
 int_error_t stackPop (my_stack_t* stack, stack_elem_t* value)
 {
-    printf("SIZE = %lld\n", stack->size);
+    //printf("SIZE = %lld\n", stack->size);
     #if N_DEBUG
     int_error_t  code_error = CHECK_STACK;
     #endif

@@ -44,11 +44,8 @@ int main()
         return 1;
     }
 
-    
+    fclose(byte_file);
     fclose(input_file);
-    fclose(byte_file );
 
     return 0;
 }
-
-

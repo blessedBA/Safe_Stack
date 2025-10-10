@@ -23,7 +23,7 @@ typedef struct reg_struct
     register_t RHX = BAD_VALUE;
 } reg_struct;
 
-typedef struct argumentStorage
+typedef struct registrStrStorage
 {
     const char* RAX = "RAX";
     const char* RBX = "RBX";
@@ -33,7 +33,7 @@ typedef struct argumentStorage
     const char* RFX = "RFX";
     const char* RGX = "RGX";
     const char* RHX = "RHX";
-} argumentStorage;
+} registrStrStorage;
 
 typedef enum
 {
@@ -60,6 +60,7 @@ typedef struct
     my_stack_t   stack1;
     b_code_struct byte_code;
     size_t P_C;
+    size_t curr_command;
     reg_struct registers;
     error_pr_t curr_error;
 } Processor_t;
@@ -73,5 +74,5 @@ int_error_t procVerify (Processor_t* processor, const char* file_name,
                                                 int line);
 void writeToRegistr (Processor_t* processor, int code_registr);
 void getValue (Processor_t* processor, int code_registr);
-
+void procDump (Processor_t* processor, int global_code_error, func_data* f_data_pr);
 #endif // PROCESSOR_PASH_H

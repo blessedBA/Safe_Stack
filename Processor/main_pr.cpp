@@ -14,11 +14,10 @@ int main()
 {
     Processor_t processor = { .stack1 = {}, .byte_code.b_code = nullptr,
                               .byte_code.count_elems = 0,
-                              .P_C = 0, .curr_error = NO_ERRORS_PR,
+                              .P_C = 0, .curr_command = 0, .curr_error = NO_ERRORS_PR,
                               .registers = {} };
 
-    char cwd[PATH_MAX] = "";
-    if (getcwd(cwd, sizeof(cwd)) == nullptr) cwd[0] = '\0';
+    //char cwd[PATH_MAX] = "";
     //fprintf(stderr, "DEBUG: cwd='%s' trying to open '%s'\n", cwd, BYTE_CODE_FOR_PROC);
     FILE* byte_file = fopen(BYTE_CODE_FOR_PROC, "rb");
     if (byte_file == nullptr)
@@ -33,6 +32,7 @@ int main()
         fprintf(stderr, "invalid count_elems\n");
         return 1;
     }
+    processor.P_C++;
     processor.byte_code.b_code = (byte_code_t*)calloc((size_t)processor.byte_code.count_elems, sizeof(byte_code_t));
     if (processor.byte_code.b_code == nullptr)
     {
@@ -49,11 +49,7 @@ int main()
         fprintf(stderr, "failed to close byte file\n");
     }
     //printf("byte file:::\t\t");
-    for (size_t index = 0; index < processor.byte_code.count_elems; index++)
-    {
-        printf("%d ", processor.byte_code.b_code[index]);
-    }
-    printf("\n");
+    //printf("\n");
     // processor.stack1 = {};
     stackInit(&(processor.stack1));
 
@@ -61,7 +57,7 @@ int main()
     //printStack(&processor.stack1, stdout);
     stackDestroy(&processor.stack1);
     printf("RAX = %lld\n", processor.registers.RAX);
-    printf("RAX = %lld\n", processor.registers.RBX);
+    printf("RBX = %lld\n", processor.registers.RBX);
     free(processor.byte_code.b_code);
     return 0;
 }

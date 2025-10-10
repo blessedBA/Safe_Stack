@@ -2,13 +2,19 @@
 #include "errors.h"
 #include "operationsCalc.h"
 #include "processor_PASH.h"
+#include "stackJumps.h"
 
 #include <assert.h>
+#include <unistd.h>
 #include <stdio.h>
 
 #define FIRST_ELEMENT      1
 #define ERROR_COUNT_ELEMS  0
 #define NUMBER_ERRORS      6
+#ifndef N_DEBUG
+#define N_DEBUG            1
+#endif
+#define PRINT_BEGINNING_OF_DUMP fprintf(output_file, "//--------------------------------processorDUMP-----------------------------//");
 
 storageProcErrors errors_pt[NUMBER_ERRORS] = { {NO_ERRORS_PR,   code_NO_ERRORS_PR,   "your processor is great!!!", true },
                                                {ERR_FAIL_OP_BT, code_ERR_FAIL_OP_BT, "failed to open byte file",   false},
@@ -34,71 +40,130 @@ size_t checkCountElems(FILE* byte_file)
 int_error_t readByteFile(Processor_t* processor, FILE* byte_file)
 {
     #if N_DEBUG
-    assert(processor && byte_file);
+    assert(byte_file);
+    procVerify(processor, __FILE__, __func__, __LINE__);
     #endif
+
     if (!fread(processor->byte_code.b_code, processor->byte_code.count_elems, sizeof(byte_code_t), byte_file))
     {
         return ERR_READ_BT;
     }
+
+    #if N_DEBUG
+    procVerify(processor, __FILE__, __func__, __LINE__);
+    #endif
+
     return NO_ERRORS_PR;
 }
 
 int_error_t doByteCode (Processor_t* processor)
 {
+    #if N_DEBUG
+    procVerify(processor, __FILE__, __func__, __LINE__);
+    #endif
 
     int_error_t code_error = 0;
     stack_elem_t deleted_elem = 0;
-    for (size_t index = 1; index < processor->byte_code.count_elems; index++)
+    stack_elem_t last_num = BAD_VALUE;
+    stack_elem_t prelast_num = BAD_VALUE;
+    for ( ; processor->P_C < processor->byte_code.count_elems; processor->P_C++)
     {
-        switch (processor->byte_code.b_code[index])
+        switch (processor->byte_code.b_code[processor->P_C])
         {
             case code_PUSH:
-                processor->P_C = code_PUSH;
-                stackPush(&processor->stack1, processor->byte_code.b_code[++index]);
+                processor->curr_command = code_PUSH;
+                stackPush(&processor->stack1, processor->byte_code.b_code[++processor->P_C]);
                 break;
             case code_POP:
-                processor->P_C = code_POP;
+                processor->curr_command = code_POP;
                 stackPop(&processor->stack1, &deleted_elem);
                 break;
             case code_OUT:
-                processor->P_C = code_OUT;
+                processor->curr_command = code_OUT;
                 printStack(&processor->stack1, stdin);
                 break;
             case code_ADD:
-                processor->P_C = code_ADD;
+                processor->curr_command = code_ADD;
                 stackAdd(&processor->stack1);
                 break;
             case code_SUB:
-                processor->P_C = code_SUB;
+                processor->curr_command = code_SUB;
                 stackSub(&processor->stack1);
                 break;
             case code_MUL:
-                processor->P_C = code_MUL;
+                processor->curr_command = code_MUL;
                 stackMul(&processor->stack1);
                 break;
             case code_DIV:
-                processor->P_C = code_DIV;
+                processor->curr_command = code_DIV;
                 stackDiv(&processor->stack1);
                 break;
             case code_SQRT:
-                processor->P_C = code_SQRT;
+                processor->curr_command = code_SQRT;
                 stackSqrt(&processor->stack1);
                 break;
             case code_PUSHR:
-                processor->P_C = code_PUSHR;
-                writeToRegistr(processor, processor->byte_code.b_code[++index]);
+                processor->curr_command = code_PUSHR;
+                writeToRegistr(processor, processor->byte_code.b_code[++processor->P_C]);
                 break;
             case code_POPR:
-                processor->P_C = code_POPR;
-                getValue(processor, processor->byte_code.b_code[++index]);
+                processor->curr_command = code_POPR;
+                getValue(processor, processor->byte_code.b_code[++processor->P_C]);
+                break;
+            case code_JMP:
+                processor->curr_command = code_JMP;
+                printf("CODE_JMP\n");
+                usleep(3e6);
+                stackJMP(processor, processor->byte_code.b_code[++processor->P_C]);
+                break;
+            case code_JB:
+                processor->curr_command = code_JB;
+                printf("CODE_JB\n");
+                usleep(3e6);
+                stackJB(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
+                break;
+            case code_JBE:
+                processor->curr_command = code_JBE;
+                printf("CODE_JBE\n");
+                usleep(3e6);
+                stackJBE(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
+                break;
+            case code_JA:
+                processor->curr_command = code_JA;
+                printf("CODE_JA\n");
+                usleep(3e6);
+                stackJA(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
+                break;
+            case code_JAE:
+                processor->curr_command = code_JAE;
+                printf("CODE_JAE\n");
+                usleep(3e6);
+                stackJAE(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
+                break;
+            case code_JE:
+                processor->curr_command = code_JE;
+                printf("CODE_JE\n");
+                usleep(3e6);
+                stackJE(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
+                break;
+            case code_JNE:
+                processor->curr_command = code_JNE;
+                printf("CODE_JNE\n");
+                usleep(3e6);
+                stackJNE(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
                 break;
             case code_HLT:
-                processor->P_C = code_HLT;
+                processor->curr_command = code_HLT;
+                processor->P_C++;
                 return code_error;
             default:
                 code_error |= code_ERR_INV_CODE;
         }
     }
+
+    #if N_DEBUG
+    code_error |= procVerify(processor, __FILE__, __func__, __LINE__);
+    #endif
 
     return code_error;
 }
@@ -132,7 +197,7 @@ int_error_t procVerify (Processor_t* processor, const char* file_name,
     }
     if (errors_pt[NO_ERRORS_PR].isError == false)
     {
-        //procDump (processor, global_code_pr_error, &f_data_pr);
+        procDump(processor, global_code_pr_error, &f_data_pr);
         return global_code_pr_error;
     }
 
@@ -141,6 +206,9 @@ int_error_t procVerify (Processor_t* processor, const char* file_name,
 
 void writeToRegistr (Processor_t* processor, int code_registr)
 {
+    #if N_DEBUG
+    procVerify(processor, __FILE__, __func__, __LINE__);
+    #endif
     code_registr = (str_arg_t)code_registr;
     stack_elem_t value = 0;
     switch (code_registr)
@@ -181,11 +249,19 @@ void writeToRegistr (Processor_t* processor, int code_registr)
             assert(0 && "invalid registr\n");
     }
 
+    #if N_DEBUG
+    procVerify(processor, __FILE__, __func__, __LINE__);
+    #endif
+
     return;
 }
 
 void getValue (Processor_t* processor, int code_registr)
 {
+    #if N_DEBUG
+    procVerify(processor, __FILE__, __func__, __LINE__);
+    #endif
+
     switch (code_registr)
     {
         case code_RAX:
@@ -216,6 +292,10 @@ void getValue (Processor_t* processor, int code_registr)
             assert(0 && "invalid registr\n");
     }
 
+    #if N_DEBUG
+    procVerify(processor, __FILE__, __func__, __LINE__);
+    #endif
+
     return;
 }
 
@@ -225,6 +305,7 @@ void procDump (Processor_t* processor, int global_code_error, func_data* f_data_
     assert(f_data_pr);
     #endif
     FILE* output_file = stderr;
+    PRINT_BEGINNING_OF_DUMP
     fprintf(output_file, "processorDump was called from file %s in function %s:%d\n", f_data_pr->file_name,
                                                                                       f_data_pr->func_name,
                                                                                       f_data_pr->line);
@@ -248,9 +329,12 @@ void procDump (Processor_t* processor, int global_code_error, func_data* f_data_
     }
     if (&processor->byte_code != nullptr)
     {
-        fprintf(output_file, "byte_code [%p]\n", processor->byte_code);
+        fprintf(output_file, "byte_code [%p]\n", &processor->byte_code);
     }
-    // ...
+    fprintf(output_file, "processor [%p]\n", processor);
+    fprintf(output_file, "programm counter: %zu\n", processor->P_C);
+    fprintf(output_file, "code of current command: %zu\n", processor->curr_command);
+    fprintf(output_file, "code of current error:   %d\n", processor->curr_error);
 
     return;
 }

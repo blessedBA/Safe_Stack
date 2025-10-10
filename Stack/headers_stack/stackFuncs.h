@@ -15,7 +15,6 @@ typedef struct
     stack_elem_t     val_r_can;
 } canary_t;
 
-
 int_error_t stackInit    (my_stack_t* stack);
 int_error_t stackPush    (my_stack_t* stack, stack_elem_t number);
 int_error_t stackPop     (my_stack_t* stack, stack_elem_t* value);
