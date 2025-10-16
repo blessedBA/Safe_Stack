@@ -24,6 +24,11 @@ typedef struct commandStorage
     const char*  JAE   = "JAE";
     const char*  JE    = "JE";
     const char*  JNE   = "JNE";
+    const char* CALL   = "CALL";
+    const char* RET    = "RET";
+    const char* DUMP   = "DUMP";
+    const char* PUSHM  = "PUSHM";
+    const char* POPM   = "POPM";
 
     stack_elem_t number = BAD_VALUE;
 } commandStorage;
@@ -47,8 +52,13 @@ typedef enum
     code_JAE   = 14,
     code_JE    = 15,
     code_JNE   = 16,
+    code_CALL  = 20,
+    code_RET   = 21,
+    code_DUMP  = 25,
     code_PUSHR = 33,
     code_POPR  = 42,
+    code_PUSHM = 62,
+    code_POPM  = 63
 } code_t;
 
 int_error_t calculatorOn (my_stack_t* stack);

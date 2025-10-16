@@ -10,9 +10,13 @@
 #define MAX_COUNT_ERR 20
 #define SIZE_BYTE_CODE 100
 
+void printErrors();
+
+extern asm_error_struct asm_errors[MAX_COUNT_ERR];
+extern label_struct labels[10];
+
 int main()
 {
-    func_data_asm error_lines[MAX_COUNT_ERR] = {};
     FILE* input_file  = fopen(ASSEMBLER, "r");
 
     if (input_file == nullptr)
@@ -30,12 +34,21 @@ int main()
         fclose(input_file);
         return 1;
     }
-    printf("byte_code [%p]\ninput_file [%p]\ncount_elems [%p]\nerror_lines [%p]\n", byte_code, input_file, &count_elems, error_lines);
-    if (writeByteCode(byte_code, input_file, &count_elems, error_lines)) // тут тоже
+    if (writeByteCode(byte_code, input_file, &count_elems)) // тут тоже
     {
-        fprintf(stderr, "something with writeByteCode went wrong...\n");
+        printErrors();
         fclose(input_file);
         return 1;
+    }
+    for (size_t index = 0; index < count_elems; index++)
+    {
+        printf("byte_code[%zu] = %d\n", index,  byte_code[index]);
+    }
+    labelsVerify(byte_code, count_elems);
+
+    for (int i = 0; i < 10; i++)
+    {
+        printf("label[%d] in main = %d\n", i, labels[i].name);
     }
     FILE* byte_file = creatByteFile(byte_code, count_elems);
     if (byte_file == nullptr)
@@ -43,9 +56,20 @@ int main()
         fprintf(stderr, "failed to open byte_file \n");
         return 1;
     }
-
     fclose(byte_file);
     fclose(input_file);
 
     return 0;
+}
+
+void printErrors()
+{
+    for (int index = 1; index < MAX_COUNT_ERR; index++)
+    {
+        if (asm_errors[index].status == true)
+        {
+            fprintf(stderr, "error in %s:%d\n", "Assembler.asm", asm_errors[index].error_lines[index].line);
+            fprintf(stderr, "%s\n", asm_errors[index].description);
+        }
+    }
 }

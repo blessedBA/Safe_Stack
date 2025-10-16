@@ -103,7 +103,7 @@ void stackDump (my_stack_t* stack, int GLOBAL_ERROR, func_data* f_data)
     FILE* output_file = stdout;
     assert(output_file != nullptr && "failed to open file!!!\n");
 
-    fprintf(output_file, "stackDump called from %s: function %s: %d\n", f_data->file_name,
+    fprintf(output_file, "stackDump called from %s: function %s:%d\n", f_data->file_name,
                                                                         f_data->func_name,
                                                                         f_data->line);
     size_t size_st_errors = sizeof(errors) / sizeof(errors[0]);

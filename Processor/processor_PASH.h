@@ -3,6 +3,7 @@
 
 #include "errors.h"
 #include "generalObjectForStack.h"
+#include "RAM.h"
 #include "stackFuncs.h"
 
 #include <stdio.h>
@@ -38,14 +39,14 @@ typedef struct registrStrStorage
 typedef enum
 {
     code_NaN = -1,
-    code_RAX =  0,
-    code_RBX =  1,
-    code_RCX =  2,
-    code_RDX =  3,
-    code_REX =  4,
-    code_RFX =  5,
-    code_RGX =  6,
-    code_RHX =  7
+    code_RAX =  555,
+    code_RBX =  556,
+    code_RCX =  557,
+    code_RDX =  558,
+    code_REX =  559,
+    code_RFX =  560,
+    code_RGX =  561,
+    code_RHX =  562
 } str_arg_t;
 
 
@@ -57,7 +58,10 @@ typedef struct
 
 typedef struct
 {
-    my_stack_t   stack1;
+    my_stack_t stack1;
+    my_stack_t stackCall;
+    ram_t*     RAM;
+    size_t     sizeRAM;
     b_code_struct byte_code;
     size_t P_C;
     size_t curr_command;
