@@ -72,7 +72,7 @@ int_error_t stackPop (my_stack_t* stack, stack_elem_t* value)
     int_error_t  code_error = CHECK_STACK;
     #endif
     //printf("stackpopik\n");
-    *value = stack->data[stack->size];
+    *value = stack->data[stack->size]; // 
     stack->data[stack->size--] = BAD_VALUE;
 
     #if N_DEBUG

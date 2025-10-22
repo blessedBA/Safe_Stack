@@ -26,9 +26,9 @@ int main()
     }
 
     int byte_code[SIZE_BYTE_CODE] = {};
-    size_t size_byte_code  = 100;
+    size_t size_byte_code  = SIZE_BYTE_CODE;
     size_t count_elems     = 1; // тк первое число под колво элементов
-    if (creatByteCode(byte_code, &size_byte_code)) // стоит дальше развивать логику обработки ошибок
+    if (creatBuffer(byte_code, &size_byte_code)) // стоит дальше развивать логику обработки ошибок
     {
         fprintf(stderr, "something with creatByteCode went wrong...\n");
         fclose(input_file);
@@ -68,8 +68,17 @@ void printErrors()
     {
         if (asm_errors[index].status == true)
         {
-            fprintf(stderr, "error in %s:%d\n", "Assembler.asm", asm_errors[index].error_lines[index].line);
-            fprintf(stderr, "%s\n", asm_errors[index].description);
+            for (int ind = 0; ind < MAX_COUNT_ERR; ind++)
+            {
+                if (asm_errors[index].error_lines[ind].line != BAD_VALUE)
+                {
+                    fprintf(stderr, "error in %s:%d\t", ASSEMBLER, asm_errors[index].error_lines[ind].line);
+                    fprintf(stderr, "%s\n", asm_errors[index].description);
+                }
+            }
+
         }
     }
+
+    return;
 }

@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 #define MAX_COUNT_ERR 20
-
+#define BAD_VALUE -666
 typedef int label_t;
 
 typedef enum
@@ -24,7 +24,8 @@ typedef enum
     ERR_FAIL_ALLOC_asm  = 2,
     ERR_INV_LABEL_asm   = 3,
     ERR_MAX_LABELS_asm  = 4,
-    ERR_FATAL_ERROR_asm = 5
+    ERR_UNEXP_SYM_asm   = 5,
+    ERR_FATAL_ERROR_asm = 6
 } asm_error_t;
 
 
@@ -40,7 +41,7 @@ typedef struct func_data_asm
 {
     char* file_name;
     char* func_name;
-    int line;
+    int line = BAD_VALUE;
 } func_data_asm;
 
 typedef struct help_var_t
@@ -66,18 +67,32 @@ typedef struct asm_error_struct
     bool status;
 } asm_error_struct;
 
-asm_error_t creatByteCode(int* byte_code, size_t* size_byte_code);
+asm_error_t creatBuffer(int* byte_code, size_t* size_byte_code);
 bool writeByteCode (int* byte_code, FILE* asm_file,
                            size_t* count_elems);
+
+bool checkLabel (help_var_t* variables, FILE* asm_file, size_t* count_elems, int* byte_array, size_t count_lines, size_t* count_labels);
+void checkComment (help_var_t* variables, FILE* asm_file, size_t count_lines);
+
 isArg getCodeCommand (help_var_t* variables);
+void  getStrArg (help_var_t* variables);
+
 FILE* creatByteFile (int* byte_code, size_t size_byte_code);
-void getStrArg (help_var_t* variables);
-void skipString (FILE* asm_file);
+void labelsVerify (int* byte_code, size_t count_elems);
+
 asm_error_t scanLabel (FILE* asm_file, size_t* count_elems, int* byte_code);
 asm_error_t scanJump (help_var_t* variables, FILE* asm_file, code_t code_command, int* byte_array, size_t* count_elems);
-void setError (help_var_t* variables, size_t count_line, asm_error_t code_error);
-void labelsVerify (int* byte_code, size_t count_elems);
+bool        scanComment (FILE* asm_file);
+
+void skipString (FILE* asm_file);
 void skipSpaces(FILE* input_file);
 void skipString (FILE* asm_file);
+
+void setError (size_t count_line, asm_error_t code_error);
+void setCode(help_var_t* variables, int* byte_array, size_t* count_elems);
+void setCodeWithArg (help_var_t* variables, int* byte_array, FILE* asm_file, size_t* count_elems, size_t count_lines);
+void setRegistr (int* byte_array, help_var_t* variables, size_t* count_elems, FILE* asm_file, code_t command);
+void setElemRAM (int* byte_array, help_var_t* variables, size_t* count_elems, FILE* asm_file, code_t command);
+void setCodeRAM (int* byte_array, help_var_t* variables, FILE* asm_file, size_t* count_elems, code_t code_RAM_command);
 
 #endif // ASSEMBLER_H
