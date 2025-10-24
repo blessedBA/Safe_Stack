@@ -8,4 +8,5 @@
 #define BYTE_CODE_FOR_PROC  "/Users/pashamalyshev/Documents/GitHub/Safe_Stack/Assembler/Byte_code.asm"
 #define FACTORIAL "Factorial.asm"
 #define ASSEMBLER "test.asm"
+#define CIRCULE   "circlule.asm"
 #endif // FILES_H

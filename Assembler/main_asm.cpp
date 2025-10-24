@@ -8,7 +8,7 @@
 
 #define N_DEBUG 1L
 #define MAX_COUNT_ERR 20
-#define SIZE_BYTE_CODE 100
+#define SIZE_BYTE_CODE 200
 
 void printErrors();
 
@@ -17,7 +17,7 @@ extern label_struct labels[10];
 
 int main()
 {
-    FILE* input_file  = fopen(ASSEMBLER, "r");
+    FILE* input_file  = fopen(CIRCULE, "r");
 
     if (input_file == nullptr)
     {
@@ -72,7 +72,7 @@ void printErrors()
             {
                 if (asm_errors[index].error_lines[ind].line != BAD_VALUE)
                 {
-                    fprintf(stderr, "error in %s:%d\t", ASSEMBLER, asm_errors[index].error_lines[ind].line);
+                    fprintf(stderr, "error in %s:%d\t", CIRCULE, asm_errors[index].error_lines[ind].line);
                     fprintf(stderr, "%s\n", asm_errors[index].description);
                 }
             }

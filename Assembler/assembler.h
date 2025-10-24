@@ -82,11 +82,12 @@ void labelsVerify (int* byte_code, size_t count_elems);
 
 asm_error_t scanLabel (FILE* asm_file, size_t* count_elems, int* byte_code);
 asm_error_t scanJump (help_var_t* variables, FILE* asm_file, code_t code_command, int* byte_array, size_t* count_elems);
-bool        scanComment (FILE* asm_file);
+bool        scanComment (help_var_t* variables, FILE* asm_file);
 
 void skipString (FILE* asm_file);
 void skipSpaces(FILE* input_file);
 void skipString (FILE* asm_file);
+void skipSpacesNoNewline(FILE* input_file);
 
 void setError (size_t count_line, asm_error_t code_error);
 void setCode(help_var_t* variables, int* byte_array, size_t* count_elems);

@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SIZE_RAM 100
+#define SIZE_RAM 110
 #define FIRST_ELEMENT      1
 #define ERROR_COUNT_ELEMS  0
 #define NUMBER_ERRORS      6
@@ -309,6 +309,10 @@ int_error_t doCommand (Processor_t* processor, int_error_t* code_error, stack_el
             stackPush(&processor->stack1, processor->byte_code.b_code[++processor->P_C]);
             break;
         case code_POP:
+            if (processor->stack1.size == 0)
+            {
+                fprintf(stderr, "code_POP with size = 0!!! P_C is %zu\n", processor->P_C);
+            }
             processor->curr_command = code_POP;
             stackPop(&processor->stack1, &tmp);
             break;
@@ -346,6 +350,10 @@ int_error_t doCommand (Processor_t* processor, int_error_t* code_error, stack_el
             getValue(processor, processor->byte_code.b_code[++processor->P_C]);
             break;
         case code_POPR:
+            if (processor->stack1.size == 0)
+            {
+                fprintf(stderr, "code_POPR with size = 0!!! P_C is %zu\n", processor->P_C);
+            }
             processor->curr_command = code_POPR;
             writeToRegistr(processor, processor->byte_code.b_code[++processor->P_C]);
             break;
@@ -359,19 +367,19 @@ int_error_t doCommand (Processor_t* processor, int_error_t* code_error, stack_el
         case code_JB:
             processor->curr_command = code_JB;
             printf("CODE_JB\n");
-            usleep(3e6);
+            //usleep(3e6);
             stackJB(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
             break;
         case code_JBE:
             processor->curr_command = code_JBE;
             printf("CODE_JBE\n");
-            usleep(3e6);
+            //usleep(3e6);
             stackJBE(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
             break;
         case code_JA:
             processor->curr_command = code_JA;
             printf("CODE_JA\n");
-            usleep(3e6);
+            //usleep(3e6);
             stackJA(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
             break;
         case code_JAE:
@@ -404,7 +412,7 @@ int_error_t doCommand (Processor_t* processor, int_error_t* code_error, stack_el
         case code_RET:
             processor->curr_command = code_RET;
             printf("CODE_RET\n");
-            usleep(3e6);
+            //usleep(3e6);
             stackPop(&processor->stackCall, &tmp);
             //printf("tmp = %d\n", tmp);
             stackJMP(processor, tmp);
@@ -415,7 +423,11 @@ int_error_t doCommand (Processor_t* processor, int_error_t* code_error, stack_el
             stackPush(&processor->stack1, processor->RAM[val_in_reg]);
             break;
         case code_POPM:
-        printf("code_POPM called\n");
+            printf("code_POPM called\n");
+            if (processor->stack1.size == 0)
+            {
+                fprintf(stderr, "code_POPM with size = 0!!! P_C is %zu\n", processor->P_C);
+            }
             processor->curr_command = code_POPM;
             stackPop(&processor->stack1, &tmp);
             printf("tmp in code_POPM after stackPop = %d\n", tmp);
@@ -423,7 +435,7 @@ int_error_t doCommand (Processor_t* processor, int_error_t* code_error, stack_el
             printf("val_in_reg after getValueFromRegistr = %lld\n", val_in_reg);
             processor->RAM[val_in_reg] = tmp;
             printf("processor->RAM[%lld] = %d\n", val_in_reg, tmp);
-            //dumpRAM(processor);
+            dumpRAM(processor);
             break;
         case code_HLT:
             processor->curr_command = code_HLT;
