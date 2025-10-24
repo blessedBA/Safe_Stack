@@ -10,10 +10,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SIZE_RAM 110
+#define SIZE_RAM 2500
 #define FIRST_ELEMENT      1
 #define ERROR_COUNT_ELEMS  0
 #define NUMBER_ERRORS      6
+//define NDEBUG
 #ifndef N_DEBUG
 #define N_DEBUG            1L
 #endif
@@ -53,33 +54,41 @@ Processor_t* creatProcessor()
 int_error_t global_code_pr_error = 0;
 size_t checkCountElems(FILE* byte_file)
 {
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(byte_file);
     #endif
+
     size_t count_elems = 0;
     fread(&count_elems, FIRST_ELEMENT, sizeof(int), byte_file);
-    printf("count_elems = %zu\n", count_elems);
+    //printf("count_elems = %zu\n", count_elems);
+
+    #ifndef NDEBUG
+    assert(byte_file);
+    #endif
+
     return (count_elems > 1) ? count_elems : ERROR_COUNT_ELEMS;
 }
 
 
 int_error_t readByteFile(Processor_t* processor, FILE* byte_file)
 {
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(byte_file);
     procVerify(processor, __FILE__, __func__, __LINE__);
-    #endif
     printf("IN %s: processor->byte_code.count_elems = %zu\n", __func__, processor->byte_code.count_elems);
     printf("IN %s: processor [%p]\n", __func__, processor);
     printf("IN %s: processor->byte_code.b_code [%p]\n", __func__, processor->byte_code.b_code);
     printf("IN %s: byte_file [%p]\n", __func__, byte_file);
+    #endif
+
     if (!fread(processor->byte_code.b_code, processor->byte_code.count_elems, sizeof(byte_code_t), byte_file))
     {
         printf("FAILED FREAD\n");
         return ERR_READ_BT;
     }
     printf("first elem in byte_code is %d\n", processor->byte_code.b_code[0]);
-    #if N_DEBUG
+
+    #ifndef NDEBUG
     procVerify(processor, __FILE__, __func__, __LINE__);
     #endif
 
@@ -88,23 +97,24 @@ int_error_t readByteFile(Processor_t* processor, FILE* byte_file)
 
 int_error_t doByteCode (Processor_t* processor)
 {
-    #if N_DEBUG
+    #ifndef NDEBUG
     procVerify(processor, __FILE__, __func__, __LINE__);
+    printf("count elems = %d\n", processor->byte_code.count_elems);
+    printf("P_C = %d\n", processor->P_C);
     #endif
 
     int_error_t code_error = 0;
     stack_elem_t last_num = BAD_VALUE;
     stack_elem_t prelast_num = BAD_VALUE;
     bool isExit = false;
-    //printf("count elems = %d\n", processor->byte_code.count_elems);
-    //printf("P_C = %d\n", processor->P_C);
+
     for ( ; processor->P_C < processor->byte_code.count_elems; processor->P_C++)
     {
         if (doCommand(processor, &code_error, last_num, prelast_num, &isExit)) return code_error;
         if (isExit) return code_error;
     }
 
-    #if N_DEBUG
+    #ifndef NDEBUG
     code_error |= procVerify(processor, __FILE__, __func__, __LINE__);
     #endif
 
@@ -198,7 +208,7 @@ void writeToRegistr (Processor_t* processor, int code_registr)
             assert(0 && "invalid registr\n");
     }
 
-    #if N_DEBUG
+    #ifndef NDEBUG
     procVerify(processor, __FILE__, __func__, __LINE__);
     #endif
 
@@ -207,7 +217,7 @@ void writeToRegistr (Processor_t* processor, int code_registr)
 
 void getValue (Processor_t* processor, int code_registr)
 {
-    #if N_DEBUG
+    #ifndef NDEBUG
     procVerify(processor, __FILE__, __func__, __LINE__);
     #endif
 
@@ -241,7 +251,7 @@ void getValue (Processor_t* processor, int code_registr)
             assert(0 && "invalid registr\n");
     }
 
-    #if N_DEBUG
+    #ifndef NDEBUG
     procVerify(processor, __FILE__, __func__, __LINE__);
     #endif
 
@@ -250,7 +260,7 @@ void getValue (Processor_t* processor, int code_registr)
 
 void procDump (Processor_t* processor, int global_code_error, func_data* f_data_pr)
 {
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(f_data_pr);
     #endif
 
@@ -350,71 +360,54 @@ int_error_t doCommand (Processor_t* processor, int_error_t* code_error, stack_el
             getValue(processor, processor->byte_code.b_code[++processor->P_C]);
             break;
         case code_POPR:
+            #ifndef NDEBUG
             if (processor->stack1.size == 0)
             {
                 fprintf(stderr, "code_POPR with size = 0!!! P_C is %zu\n", processor->P_C);
             }
+            #endif
             processor->curr_command = code_POPR;
             writeToRegistr(processor, processor->byte_code.b_code[++processor->P_C]);
             break;
         case code_JMP:
             processor->curr_command = code_JMP;
-            printf("CODE_JMP\n");
-            //usleep(3e6);
-            //printf("arg with jump\n");
             stackJMP(processor, processor->byte_code.b_code[++processor->P_C]);
             break;
         case code_JB:
             processor->curr_command = code_JB;
-            printf("CODE_JB\n");
-            //usleep(3e6);
             stackJB(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
             break;
         case code_JBE:
             processor->curr_command = code_JBE;
-            printf("CODE_JBE\n");
-            //usleep(3e6);
             stackJBE(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
             break;
         case code_JA:
             processor->curr_command = code_JA;
-            printf("CODE_JA\n");
-            //usleep(3e6);
             stackJA(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
             break;
         case code_JAE:
             processor->curr_command = code_JAE;
-            printf("CODE_JAE\n");
-            //usleep(3e6);
             stackJAE(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
             break;
         case code_JE:
             processor->curr_command = code_JE;
-            printf("CODE_JE\n");
-            //usleep(3e6);
             stackJE(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
             break;
         case code_JNE:
             processor->curr_command = code_JNE;
-            printf("CODE_JNE\n");
             usleep(3e6);
             stackJNE(processor, processor->byte_code.b_code[++processor->P_C], &prelast_num, &last_num);
             break;
         case code_CALL:
             processor->curr_command = code_CALL;
-            printf("CODE_CALL\n");
-            //usleep(3e6);
             stackPush(&processor->stackCall, processor->P_C + 1); // processor->P_C + 1 это индекс аргумента колл, еще +1 сделает в конце сам цикл
-            printf("processor->P_C in CALL before jump = %d\n", processor->P_C);
+            //printf("processor->P_C in CALL before jump = %d\n", processor->P_C);
             stackJMP(processor, processor->byte_code.b_code[++processor->P_C]);
-            printf("processor->P_C in CALL after jump = %d\n", processor->P_C);
+            //printf("processor->P_C in CALL after jump = %d\n", processor->P_C);
             break;
         case code_RET:
             processor->curr_command = code_RET;
-            printf("CODE_RET\n");
-            //usleep(3e6);
             stackPop(&processor->stackCall, &tmp);
-            //printf("tmp = %d\n", tmp);
             stackJMP(processor, tmp);
             break;
         case code_PUSHM:
@@ -423,18 +416,20 @@ int_error_t doCommand (Processor_t* processor, int_error_t* code_error, stack_el
             stackPush(&processor->stack1, processor->RAM[val_in_reg]);
             break;
         case code_POPM:
+            #ifndef NDEBUG
             printf("code_POPM called\n");
             if (processor->stack1.size == 0)
             {
                 fprintf(stderr, "code_POPM with size = 0!!! P_C is %zu\n", processor->P_C);
             }
+            #endif
             processor->curr_command = code_POPM;
             stackPop(&processor->stack1, &tmp);
-            printf("tmp in code_POPM after stackPop = %d\n", tmp);
+            //printf("tmp in code_POPM after stackPop = %d\n", tmp);
             getValueFromRegistr(processor, &val_in_reg);
             printf("val_in_reg after getValueFromRegistr = %lld\n", val_in_reg);
             processor->RAM[val_in_reg] = tmp;
-            printf("processor->RAM[%lld] = %d\n", val_in_reg, tmp);
+            //printf("processor->RAM[%lld] = %d\n", val_in_reg, tmp);
             dumpRAM(processor);
             break;
         case code_HLT:

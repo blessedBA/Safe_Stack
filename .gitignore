@@ -10,7 +10,5 @@ Assembler.out
 Assembler.out.dSYM
 Processor.out
 text.txt
-Utils_asm.cpp
-Utils_asm.h
 build_assembler.sh
 

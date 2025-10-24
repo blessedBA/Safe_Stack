@@ -72,17 +72,18 @@ int main()
     {
         fprintf(stderr, "failed to close byte file\n");
     }
-    #endif
     for (int index = 0; index < processor->byte_code.count_elems; index++)
     {
         printf("byte_code[%d] = %d\n", index, processor->byte_code.b_code[index]);
 
     }
+    #endif
     //printf("byte file:::\t\t");
     //printf("\n");
 
     doByteCode(processor);
-    dumpRAM(processor);
+
+    //dumpRAM(processor);
     //printStack(&processor.stack1, stdout);
     stackDestroy(&(processor->stack1));
     stackDestroy(&(processor->stackCall));

@@ -1,6 +1,7 @@
 #include "assembler.h"
 #include "buffer.h"
 #include "Files.h"
+#include "labels_comments.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -17,7 +18,7 @@ extern label_struct labels[10];
 
 int main()
 {
-    FILE* input_file  = fopen(CIRCULE, "r");
+    FILE* input_file  = fopen(FACTORIAL, "r");
 
     if (input_file == nullptr)
     {
@@ -40,22 +41,25 @@ int main()
         fclose(input_file);
         return 1;
     }
+    #ifndef NDEBUG
     for (size_t index = 0; index < count_elems; index++)
     {
         printf("byte_code[%zu] = %d\n", index,  byte_code[index]);
     }
+    #endif
     labelsVerify(byte_code, count_elems);
-
+    FILE* byte_file = creatByteFile(byte_code, count_elems);
+    #ifndef NDEBUG
     for (int i = 0; i < 10; i++)
     {
         printf("label[%d] in main = %d\n", i, labels[i].name);
     }
-    FILE* byte_file = creatByteFile(byte_code, count_elems);
     if (byte_file == nullptr)
     {
         fprintf(stderr, "failed to open byte_file \n");
         return 1;
     }
+    #endif
     fclose(byte_file);
     fclose(input_file);
 
@@ -76,7 +80,6 @@ void printErrors()
                     fprintf(stderr, "%s\n", asm_errors[index].description);
                 }
             }
-
         }
     }
 

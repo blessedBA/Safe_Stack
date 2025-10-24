@@ -10,23 +10,22 @@
 
 
 PUSH 0
-PUSH 100
+PUSH 2500
 POPR RBX ; граница цикла
 POPR RAX ; наш счетчик цикла
-PUSH 1
-PUSH 0
-POPR RHX ; индекс в оперативке на символ '*'
-POPR RGX ; индекс в оперативке на символ '#'
 PUSH 35 ; ASCII код '#'
-POPM [RGX]
 PUSH 42 ; ASCII код '*'
-POPM [RHX]
-
+POPR RHX
+POPR RGX
+PUSH 50
+PUSH 50
+POPR REX ; ширина рисунка
+POPR RFX ; длина рисунка
 
 :2
 CALL :3
 PUSHR RAX
-PUSH 10
+PUSHR REX
 DIV
 POPR RCX ; посчитали y
 CALL :5 ; посчитали х
@@ -34,10 +33,10 @@ POPR RDX
 CALL :6
 CALL :7
 ADD
-PUSH 3
+PUSH 200 ; радиус нашего кружочка
 JA :8
-PUSHM [RHX]
-OUT ; печать *
+PUSHR RHX  ; достаем аски код звездочки
+POPM [RAX] ; сохраняем по i-ому индексу
 CALL :1
 JMP :2
 
@@ -60,39 +59,43 @@ RET
 :5 ; посчитать x
 PUSHR RAX
 PUSHR RAX
-PUSH 10
+PUSHR REX
 DIV
-PUSH 10
+PUSHR REX
 MUL
 SUB
 RET
 
 
-:6 ; посчитать (y - 5)^2
+:6 ; посчитать (y - 25)^2
 PUSHR RCX
-PUSH 5
+PUSH 2
+MUL
+PUSH 25
 SUB
 PUSHR RCX
-PUSH 5
+PUSH 2
+MUL
+PUSH 25
 SUB
 MUL
 RET
 
 
-:7 ; посчитать (x - 5)^2
+:7 ; посчитать (x - 25)^2
 PUSHR RDX
-PUSH 5
+PUSH 25
 SUB
 PUSHR RDX
-PUSH 5
+PUSH 25
 SUB
 MUL
 RET
 
 
 :8 ; условие - внутри ли круга? (выполнение в случае правды)
-PUSHM [RGX]
-OUT
+PUSHR RGX ; достаем аски код решеточки
+POPM [RAX] ; кладем его по i-ому индексу в оперативку
 CALL :1
 JMP :2
 

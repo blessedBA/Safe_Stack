@@ -2,13 +2,14 @@
 #include "calculator.h"
 #include "Files.h"
 #include "generalObjectForStack.h"
-#include "assembler.h"
+#include "labels_comments.h"
 #include "../Processor/processor_PASH.h"
 #include "stackFuncs.h"
 #include "Utils_asm.h"
 
 #include <assert.h>
 #include <ctype.h>
+#include <mm_malloc.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +29,7 @@
 #define CMP_CMD(CMD, isArg) if (strcmp(variables->commands.CMD, variables->command) == 0) { \
                             variables->code_command = code_##CMD; \
                             return isArg; }
+
 label_struct labels[NUMBER_LABELS] = {};
 asm_error_struct asm_errors[MAX_COUNT_ERR] = { {.code_asm_error = HAVE_NO_ERRORS_asm, .error_lines = {}, .description = "you have no error!!!",        .status = true },
                                                {.code_asm_error = ERR_INV_COM_asm,    .error_lines = {}, .description = "you entered invalid command", .status = false},
@@ -38,20 +40,35 @@ asm_error_struct asm_errors[MAX_COUNT_ERR] = { {.code_asm_error = HAVE_NO_ERRORS
 
 asm_error_t creatBuffer(int* byte_code, size_t* size_byte_code)
 {
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(byte_code && size_byte_code);
     #endif
 
     byte_code = (int*)calloc(FIRST_SIZE_B_T, sizeof(int));
 
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(byte_code && size_byte_code);
     #endif
 
     return HAVE_NO_ERRORS_asm;
 }
-bool writeByteCode (int* byte_array, FILE* asm_file,
-                           size_t* count_elems)
+
+void resizeByteCode (int* byte_code, size_t size)
+{
+    #ifndef NDEBUG
+    assert(byte_code);
+    #endif
+
+    byte_code = (int*)realloc(byte_code, sizeof(int) * size);
+
+    #ifndef NDEBUG
+    assert(byte_code);
+    #endif
+
+    return;
+}
+
+bool writeByteCode (int* byte_array, FILE* asm_file, size_t* count_elems)
 {
     #ifndef NDEBUG
     assert(byte_array != nullptr && asm_file != nullptr && count_elems != nullptr);
@@ -63,6 +80,10 @@ bool writeByteCode (int* byte_array, FILE* asm_file,
     size_t count_labels = 0;
     while (true)
     {
+        if (*count_elems >= 300)
+        {
+            resizeByteCode(byte_array, *count_elems);
+        }
         // printf("\n\n");
         // printf("line %d\n", count_lines);
         // variables.ch = fgetc(asm_file);
@@ -116,18 +137,11 @@ bool writeByteCode (int* byte_array, FILE* asm_file,
         {
             continue;
         }
-        //printf(" CH = %c\n", variables.ch);
-        //printf(" count_elems = %zu\n\n", *count_elems);
-        //ungetc(variables.ch, asm_file); // возвращаю первый символ обратно в файл
         fscanf(asm_file, "%5s", variables.command);
-        printf("variables.command after fscanf = %s\n", variables.command);
-        //printf("command = %s\n", variables.command);
         switch (getCodeCommand(&variables))
         {
             case HAVE_ERROR:
-                //printf("have ERROR!\n");
                 variables.flag_error = true;
-                printf("ERRRRRRORRRR COMMAND\n\n");
                 setError(count_lines, ERR_INV_COM_asm);
                 variables.ind_error++;
                 if (variables.ind_error + 1 == MAX_COUNT_ERR) return true;
@@ -142,15 +156,10 @@ bool writeByteCode (int* byte_array, FILE* asm_file,
             default:
                 fprintf(stderr, "эммммм, default в %s %s:%d\n", __FILE__, __func__, __LINE__);
         }
-        printf("ИДИ ТЫ НАХУЙ БЛЯЯЯЯЯЯЯЯЯЯЯЯЯЯ\n");
-        //variables.ch = fgetc(asm_file);
-        printf("variables.ch = %c\n", variables.ch);
         checkComment(&variables, asm_file, count_lines);
     }
 
-    //printf("COUNT ARGUMENTS IS %zu\n", count_args);
     byte_array[0] = (int)*count_elems;
-    //printf("in the end of writeByteCode variables.flag_error is %d\n", variables.flag_error);
 
     #ifndef NDEBUG
     assert(byte_array != nullptr && asm_file != nullptr && count_elems != nullptr);
@@ -161,7 +170,10 @@ bool writeByteCode (int* byte_array, FILE* asm_file,
 
 isArg getCodeCommand (help_var_t* variables)
 {
-    //printf("name_command [%p]\n", name_command);
+    #ifndef NDEBUG
+    assert(variables);
+    #endif
+
     CMP_CMD(PUSH,    HAVE_ARG)
     CMP_CMD(PUSHR,   HAVE_ARG)
     CMP_CMD(POPR,    HAVE_ARG)
@@ -186,18 +198,25 @@ isArg getCodeCommand (help_var_t* variables)
     CMP_CMD(HLT,  HAVE_NO_ARG)
     CMP_CMD(DUMP, HAVE_NO_ARG)
 
+    #ifndef NDEBUG
+    assert(variables);
+    #endif
+
     return HAVE_ERROR;
 }
 
 FILE* creatByteFile (int* byte_code, size_t count_elems)
 {
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(byte_code && count_elems > 0);
     #endif
+
     FILE* byte_file = fopen(BYTE_CODE, "wb");
-    #if N_DEBUG
+
+    #ifndef NDEBUG
     assert(byte_file);
     #endif
+
     fwrite(byte_code, count_elems, sizeof(int), byte_file);
 
     return byte_file;
@@ -205,9 +224,10 @@ FILE* creatByteFile (int* byte_code, size_t count_elems)
 
 void getStrArg (help_var_t* variables)
 {
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(variables);
     #endif
+
     if (strcmp(variables->arguments.RAX, variables->str_arg) == 0)
     {
         variables->code_str_arg = code_RAX;
@@ -249,74 +269,16 @@ void getStrArg (help_var_t* variables)
         variables->code_str_arg = code_POPM_pr;
     }
 
+    #ifndef NDEBUG
+    assert(variables);
+    #endif
+
     return;
-}
-
-// void getAdressRAM (help_var_t* variables)
-// {
-//     if (variables->str_arg[0] != '[')
-//     {
-//
-//     }
-// }
-
-asm_error_t scanLabel (FILE* asm_file, size_t* count_elems, int* byte_code)
-{
-    #if N_DEBUG
-    assert(asm_file && count_elems && byte_code);
-    #endif
-
-    //printf("count elems before scanLabel = %zu\n", *count_elems);
-    label_t curr_label = 0;
-    bool isReadLabel = false;
-    int temp_count_elems = 0;
-    if (fscanf(asm_file, "%d", &curr_label) != 1)
-    {
-        printf("error\n");
-        return ERR_INV_LABEL_asm;
-    }
-    int ch = fgetc(asm_file);
-    if (isspace(ch) == false)
-    {
-        return ERR_INV_LABEL_asm;
-    }
-    ungetc(ch, asm_file);
-    for (int index = 0; index < NUMBER_LABELS; index++)
-    {
-        if (labels[index].isUsed && labels[index].isInit == false && labels[index].name == curr_label)
-        {
-            isReadLabel = true;
-            labels[index].isInit = true;
-            temp_count_elems = labels[index].adress_label;
-            labels[index].adress_label = (int)*count_elems;
-            byte_code[temp_count_elems] = (int)(*count_elems - 1);
-            //printf("pizdec eto %d - label_name\n", curr_label);
-            *count_elems += 1;
-            break;
-        }
-        if (labels[index].isInit == false && labels[index].name == BAD_VALUE)
-        {
-            isReadLabel = true;
-            labels[index].name = curr_label;
-            labels[index].adress_label = (label_t)*count_elems;
-            //printf("label_adress[%d] in scanLabel = %d\n", index, labels[index].adress_label);
-            *count_elems += 1;
-            labels[index].isInit = true;
-            break;
-        }
-    }
-    //printf("count elems after scanLabel = %zu\n", *count_elems);
-
-    #if N_DEBUG
-    assert(asm_file && count_elems && byte_code);
-    #endif
-
-    return (isReadLabel) ? HAVE_NO_ERRORS_asm : ERR_MAX_LABELS_asm;
 }
 
 asm_error_t scanJump (help_var_t* variables, FILE* asm_file, code_t code_command, int* byte_array, size_t* count_elems)
 {
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(variables && asm_file && byte_array && count_elems);
     #endif
 
@@ -355,7 +317,7 @@ asm_error_t scanJump (help_var_t* variables, FILE* asm_file, code_t code_command
     }
     *count_elems += 1;
 
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(variables && asm_file && byte_array && count_elems);
     #endif
 
@@ -376,120 +338,13 @@ void setError (size_t count_line, asm_error_t code_error)
             break;
         }
     }
-    //printf("asm_errors[code_error].error_lines[variables->ind_error].line IS %d\n", asm_errors[code_error].error_lines[variables->ind_error].line);
 
     return;
-}
-
-void labelsVerify (int* byte_code, size_t count_elems)
-{
-    #if N_DEBUG
-    assert(byte_code && count_elems != 0);
-    #endif
-
-    for (size_t index = 0; index < count_elems; index++)
-    {
-        if (byte_code[index] == code_JMP)
-        {
-            for (int ind = 0; ind < NUMBER_LABELS; ind++)
-            {
-                if (labels[ind].name == byte_code[index])
-                {
-                    if (labels[ind].isUsed == true && labels[ind].isInit == false)
-                    {
-                        fprintf(stderr, "invalid label on %zuth element\n", index);
-                    }
-                }
-            }
-        }
-    }
-    #if N_DEBUG
-    assert(byte_code && count_elems != 0);
-    #endif
-
-    return;
-}
-
-void skipSpaces(FILE* input_file)
-{
-    #if N_DEBUG
-    assert(input_file);
-    #endif
-
-    int ch = fgetc(input_file);
-    while (ch != EOF && isspace(ch))
-        ch = fgetc(input_file);
-    if (ch != EOF) ungetc(ch, input_file);
-
-    // int ch = fgetc(input_file);
-    // printf("ch in skipSpaces = '%c'\n", ch);
-    // while (ср == ' ')
-    //     ch = fgetc(input_file);
-    // //printf("sdfsfgsgs ==== %c\n", ch);
-    // ungetc(ch, input_file);
-
-    return;
-}
-
-void skipSpacesNoNewline(FILE* input_file)
-{
-    #if N_DEBUG
-    assert(input_file);
-    #endif
-
-    int ch = fgetc(input_file);
-    while (ch != EOF && (ch == ' ' || ch == '\t' || ch == '\r'))
-        ch = fgetc(input_file);
-    if (ch != EOF) ungetc(ch, input_file);
-}
-
-void skipString (FILE* asm_file)
-{
-    #if N_DEBUG
-    assert(asm_file);
-    #endif
-
-    int ch = 0;
-    while((ch = fgetc(asm_file)) != EOF && ch != '\n')
-    ;
-
-    return;
-}
-
-bool scanComment (help_var_t* variables, FILE* asm_file)
-{
-    #ifndef NDEBUG
-    assert(variables && asm_file);
-    #endif
-
-    skipSpacesNoNewline(asm_file);
-    //fseek(asm_file, -1L, SEEK_CUR);
-    int ch = fgetc(asm_file);
-    if (ch == '\n' || ch == EOF)
-    {
-        printf("THERE WERE NOT COMMENT!!!\n\n");
-        return false;
-    }
-    //ch = fgetc(asm_file);
-    if (ch == ';' || variables->ch == ';')
-    {
-        printf("THAT WAS A COMMENT!!!\n\n");
-        skipString(asm_file);
-        return false;
-    }
-    ungetc(ch, asm_file);
-    skipString(asm_file);
-
-    #ifndef NDEBUG
-    assert(variables && asm_file);
-    #endif
-
-    return true;
 }
 
 void setRegistr (int* byte_array, help_var_t* variables, size_t* count_elems, FILE* asm_file, code_t command)
 {
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(byte_array && variables && count_elems && asm_file);
     #endif
 
@@ -502,54 +357,11 @@ void setRegistr (int* byte_array, help_var_t* variables, size_t* count_elems, FI
     byte_array[*count_elems] = variables->code_str_arg;
     *count_elems += 1;
 
-    #if N_DEBUG
+    #ifndef NDEBUG
     assert(byte_array && variables && count_elems && asm_file);
     #endif
 
     return;
-}
-
-bool checkLabel (help_var_t* variables, FILE* asm_file, size_t* count_elems, int* byte_array, size_t count_lines, size_t* count_labels)
-{
-    #ifndef NDEBUG
-    assert(variables && asm_file && byte_array && count_labels);
-    #endif
-
-    skipSpaces(asm_file);
-    variables->ch = fgetc(asm_file);
-    printf("variables->ch in checkLabel AFTER SKIPSPACES = %c\n", variables->ch);
-    if (variables->ch == ':')
-    {
-        *count_labels += 1;
-        switch (scanLabel(asm_file, count_elems, byte_array))
-        {
-            case HAVE_NO_ERRORS_asm:
-                break;
-            case ERR_INV_LABEL_asm:
-                variables->flag_error = true;
-                setError(count_lines, ERR_UNEXP_SYM_asm);
-                variables->ind_error++;
-            case ERR_MAX_LABELS_asm:
-                variables->flag_error = true;
-                setError(count_lines, ERR_UNEXP_SYM_asm);
-                variables->ind_error++;
-            default:
-                fprintf(stderr, "assert called from %s:%d - invalid return value from %s\n", __FILE__, __LINE__, __func__);
-                assert(0);
-        }
-        checkComment(variables, asm_file, count_lines);
-        //skipString(asm_file);
-        return true;
-    }
-    ungetc(variables->ch, asm_file);
-    skipSpaces(asm_file);
-    //checkComment(variables, asm_file, count_lines);
-
-    #ifndef NDEBUG
-    assert(variables && asm_file && byte_array && count_labels);
-    #endif
-
-    return false;
 }
 
 void setCode(help_var_t* variables, int* byte_array, size_t* count_elems)
@@ -649,28 +461,6 @@ void setCodeWithArg (help_var_t* variables, int* byte_array, FILE* asm_file, siz
     return;
 }
 
-void checkComment (help_var_t* variables, FILE* asm_file, size_t count_lines)
-{
-    #ifndef NDEBUG
-    assert(variables && asm_file);
-    #endif
-
-    if (scanComment(variables, asm_file))
-    {
-        printf("scanComment was true!!!!!\n");
-        variables->flag_error = true;
-        setError(count_lines, ERR_UNEXP_SYM_asm);
-        variables->ind_error++;
-
-    }
-
-    #ifndef NDEBUG
-    assert(variables && asm_file);
-    #endif
-
-    return;
-}
-
 void setCodeRAM (int* byte_array, help_var_t* variables, FILE* asm_file, size_t* count_elems, code_t code_RAM_command)
 {
     #ifndef NDEBUG
@@ -679,7 +469,7 @@ void setCodeRAM (int* byte_array, help_var_t* variables, FILE* asm_file, size_t*
 
     skipSpaces(asm_file);
     variables->ch = fgetc(asm_file);
-    printf("first elem of argument in %s = %c\n", __func__, variables->ch);
+    //printf("first elem of argument in %s = %c\n", __func__, variables->ch);
     fscanf(asm_file, "%3s", variables->str_arg);
     getStrArg(variables);
     variables->ch = fgetc(asm_file);

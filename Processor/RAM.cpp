@@ -6,10 +6,9 @@
 #include <stdlib.h>
 
 //#define NDEBUG
-#define SIZE_RAM    100
-#define WIDTH_RAM   10
-#define COUNT_LINES 10
-#define COUNT_ROWS  10
+#define SIZE_RAM    2500
+#define WIDTH_RAM   50
+#define COUNT_LINES 50
 
 void dumpRAM (Processor_t* processor);
 
@@ -35,10 +34,10 @@ void dumpRAM (Processor_t* processor)
         fprintf(output_file, "[%d][]  ", index);
         for ( ; ind < SIZE_RAM; ind++)
         {
-            if (ind % WIDTH_RAM == 0 && ind != 0 && ind / 10 == index + 1) break;
-            fprintf(output_file, "[%2d] %2d\t", ind, processor->RAM[ind]);
+            if (ind % WIDTH_RAM == 0 && ind != 0 && ind / WIDTH_RAM == index + 1) break;
+            fprintf(output_file, "%c", processor->RAM[ind]);
         }
-        fprintf(output_file, "\n\n");
+        fprintf(output_file, "\n");
     }
 
     fprintf(output_file, "\n--------------------------------------End-of-DumpRAM-----------------\n");
